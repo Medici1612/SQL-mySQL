@@ -1,0 +1,194 @@
+/* Estrutura Básica de um SELECT; */
+
+SELECT coluna1, coluna2 FROM tabela;
+
+/* Seleção de Colunas Específicas */
+
+SELECT nome, idade FROM clientes;
+SELECT * FROM clientes;
+
+
+/* Filtros com WHERE */
+
+SELECT * FROM produtos WHERE preco > 100;
+
+/* Operadores Lógicos e de Comparação */
+
+SELECT * FROM clientes WHERE cidade = 'São Paulo' AND idade > 30;
+
+/* Ordenação de Resultados com ORDER BY */
+
+SELECT nome, preco FROM produtos ORDER BY preco DESC;
+
+/* Limitar Resultados com LIMIT */
+
+SELECT * FROM clientes LIMIT 5;
+
+/* Uso de JOIN para Combinar Tabelas */
+
+SELECT clientes.nome, pedidos.data 
+FROM clientes 
+INNER JOIN pedidos ON clientes.id = pedidos.cliente_id;
+
+SELECT clientes.nome, pedidos.data 
+FROM clientes 
+LEFT JOIN pedidos ON clientes.id = pedidos.cliente_id;
+
+/*  Funções de Agregação */
+
+SELECT COUNT(*) FROM pedidos;
+SELECT SUM(preco) FROM produtos;
+SELECT AVG(idade) FROM clientes;
+SELECT MAX(preco) FROM produtos;
+
+/* Agrupar Resultados com GROUP BY */
+
+SELECT categoria, COUNT(*) 
+FROM produtos 
+GROUP BY categoria;
+
+/* Filtrar Grupos com HAVING */
+
+SELECT categoria, COUNT(*) 
+FROM produtos 
+GROUP BY categoria 
+HAVING COUNT(*) > 10;
+
+/* Subconsultas (Subqueries) */
+
+SELECT nome FROM clientes 
+WHERE id IN (SELECT cliente_id FROM pedidos WHERE valor > 100);
+
+/* Consultas com Alias (AS) */
+
+SELECT nome AS Cliente, preco AS Preço FROM produtos;
+
+/* Uso do BETWEEN */
+
+SELECT nome, preco FROM produtos WHERE preco BETWEEN 50 AND 150;
+SELECT cliente_id, data FROM pedidos WHERE data BETWEEN '2024-01-01' AND '2024-12-31';
+SELECT nome FROM clientes WHERE nome BETWEEN 'A' AND 'M';
+
+/* Uso de IN */
+
+SELECT nome FROM produtos WHERE categoria IN ('Eletrônicos', 'Roupas', 'Brinquedos');
+
+/* Uso de LIKE para Busca por Padrão */
+
+SELECT nome FROM clientes WHERE nome LIKE 'Jo%';
+SELECT nome FROM produtos WHERE nome LIKE '_____';
+
+/* União de Resultados com UNION */
+
+SELECT nome FROM clientes 
+UNION 
+SELECT nome FROM fornecedores;
+
+SELECT nome FROM clientes 
+UNION ALL 
+SELECT nome FROM fornecedores;
+
+/* Subconsultas em WHERE ou FROM */
+
+SELECT nome, preco FROM produtos 
+WHERE preco > (SELECT AVG(preco) FROM produtos);
+
+SELECT categoria, AVG(total_venda) 
+FROM (SELECT categoria, SUM(preco) AS total_venda 
+      FROM produtos 
+      GROUP BY categoria) AS vendas_por_categoria;
+
+/* Consultas Aninhadas com CASE */
+
+SELECT nome, preco,
+  CASE
+    WHEN preco < 50 THEN 'Barato'
+    WHEN preco BETWEEN 50 AND 100 THEN 'Médio'
+    ELSE 'Caro'
+  END AS categoria_preco
+FROM produtos;
+
+/* Manipulação de Datas */
+
+SELECT id_pedido, DATEDIFF(NOW(), data_criacao) AS dias_desde_criacao 
+FROM pedidos;
+
+SELECT nome, data_vencimento, DATE_ADD(data_vencimento, INTERVAL 10 DAY) AS nova_data 
+FROM pagamentos;
+
+/* Funções String */
+
+SELECT CONCAT(primeiro_nome, ' ', ultimo_nome) AS nome_completo FROM clientes;
+SELECT UPPER(nome) FROM clientes;
+
+
+/* Vistas (VIEW) */
+
+CREATE VIEW produtos_caros AS
+SELECT nome, preco FROM produtos WHERE preco > 100;
+
+SELECT * FROM produtos_caros;
+
+/* Indexação e Performance */
+
+CREATE INDEX idx_produtos_nome ON produtos(nome);
+CREATE INDEX idx_produtos_nome_preco ON produtos(nome, preco);
+
+/* Consultas Recursivas (CTE - Common Table Expressions) */
+
+WITH vendas_totais AS (
+  SELECT cliente_id, SUM(valor) AS total
+  FROM vendas
+  GROUP BY cliente_id
+)
+SELECT cliente_id, total FROM vendas_totais WHERE total > 1000;
+
+/*  Funções de Janela (Window Functions) */
+
+SELECT nome, preco, ROW_NUMBER() OVER (ORDER BY preco DESC) AS rank FROM produtos;
+
+SELECT nome, preco, RANK() OVER (ORDER BY preco DESC) AS ranking FROM produtos;
+
+/* Operadores EXISTS e NOT EXISTS */
+
+SELECT nome FROM clientes 
+WHERE EXISTS (SELECT 1 FROM pedidos WHERE pedidos.cliente_id = clientes.id);
+
+SELECT nome FROM clientes 
+WHERE NOT EXISTS (SELECT 1 FROM pedidos WHERE pedidos.cliente_id = clientes.id);
+
+/*  Consultas Complexas com UNION e INTERSECT */
+
+SELECT cliente_id FROM vendas WHERE produto = 'Produto A'
+
+SELECT cliente_id FROM vendas WHERE produto = 'Produto B';
+
+
+/* Transações (TRANSACTION) */
+
+START TRANSACTION;
+
+INSERT INTO pedidos (cliente_id, data, total) VALUES (1, '2024-10-10', 500);
+UPDATE clientes SET saldo = saldo - 500 WHERE id = 1;
+
+COMMIT; -- ou ROLLBACK em caso de erro
+
+/* Tratamento de Nulos (NULL) */
+
+SELECT nome FROM clientes WHERE telefone IS NULL;
+SELECT nome, COALESCE(telefone, 'Sem telefone') FROM clientes;
+
+/* Cláusula DISTINCT */
+
+SELECT DISTINCT cidade FROM clientes;
+
+
+/* Exclusão de Dados com DELETE */
+
+DELETE FROM clientes WHERE id = 5;
+
+/* Atualização de Dados com UPDATE */
+
+UPDATE produtos 
+SET preco = preco * 1.10 
+WHERE categoria = 'Eletrônicos';
